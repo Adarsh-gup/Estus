@@ -108,7 +108,27 @@ void Scanner::scanToken() {
         case '/':
             if (match('/')) {
                 while (peek() != '\n' && !EndofSource()) advance();
-            } else {
+            }
+            else if (match('*')){
+                int depth = 1;
+                while ( depth != 0 && !EndofSource() ) {
+                 if (peek() == '/' && peekNext() == '*'){
+                    ++depth;
+                    advance(); 
+                    advance();
+                }
+                 else if ( peek() == '*' && peekNext() == '/') {
+                    --depth;
+                    advance(); 
+                    advance();
+                }
+                 else if (peek() == '\n') { m_line++; advance();}
+                 else {advance();}
+               }
+               if (EndofSource()) { error(m_line, "Unterminated comment.");}
+            
+            }
+            else {
                 addToken(TokenType::SLASH);
             }
             break;
