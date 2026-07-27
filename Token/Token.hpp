@@ -9,12 +9,12 @@
 std::string tokenToString(const TokenType& type);
 
 class Token {
-private:
+public: 
 TokenType m_type;
 std::string m_lexeme {"???"};
 std::variant<std::monostate, double , std::string> m_literal;
 int m_line {0};
-public: 
+
 Token(TokenType type, std::string lexeme,
      std::variant<std::monostate, double , std::string> literal, int line) :
     m_type{type},
@@ -23,5 +23,6 @@ Token(TokenType type, std::string lexeme,
 {} 
 friend std::ostream& operator<<(std::ostream& out, const Token& token);
 void toString() const;
+const std::string& getLexeme() const { return m_lexeme; }
 };
 

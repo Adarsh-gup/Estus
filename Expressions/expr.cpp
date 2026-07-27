@@ -10,37 +10,40 @@ class Grouping;
 class Literal;
 class Unary;
 
-// ─────────────────────────────────────────────
-//  Visitor interface
-// ─────────────────────────────────────────────
+
+using Value = std::variant<std::monostate, double, bool, std::string>;
+
+//  Visitor interface  (single return type: Value)
+
 class ExprVisitor {
 public:
     virtual ~ExprVisitor() = default;
-    virtual void visitBinary(Binary& binary)     = 0;
-    virtual void visitGrouping(Grouping& grouping) = 0;
-    virtual void visitLiteral(Literal& literal)  = 0;
-    virtual void visitUnary(Unary& unary)        = 0;
+    virtual Value visitBinary(Binary& binary)       = 0;
+    virtual Value visitGrouping(Grouping& grouping) = 0;
+    virtual Value visitLiteral(Literal& literal)    = 0;
+    virtual Value visitUnary(Unary& unary)          = 0;
 };
 
+//  Abstract base Expr
 
 class Expr {
 public:
     virtual ~Expr() = default;
-    virtual void accept(ExprVisitor& visitor) = 0;
+    virtual Value accept(ExprVisitor& visitor) = 0;
 };
 
 
 class Binary : public Expr {
 public:
     const std::unique_ptr<Expr> m_left;
-    const Token m_op;
+    const Token                 m_op;
     const std::unique_ptr<Expr> m_right;
 
     Binary(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
         : m_left(std::move(left)), m_op(std::move(op)), m_right(std::move(right)) {}
 
-    void accept(ExprVisitor& visitor) override {
-        visitor.visitBinary(*this);
+    Value accept(ExprVisitor& visitor) override {
+        return visitor.visitBinary(*this);
     }
 };
 
@@ -51,8 +54,8 @@ public:
     explicit Grouping(std::unique_ptr<Expr> expr)
         : m_expr(std::move(expr)) {}
 
-    void accept(ExprVisitor& visitor) override {
-        visitor.visitGrouping(*this);
+    Value accept(ExprVisitor& visitor) override {
+        return visitor.visitGrouping(*this);
     }
 };
 
@@ -63,20 +66,20 @@ public:
     explicit Literal(std::variant<std::monostate, double, std::string> value)
         : m_value(std::move(value)) {}
 
-    void accept(ExprVisitor& visitor) override {
-        visitor.visitLiteral(*this);
+    Value accept(ExprVisitor& visitor) override {
+        return visitor.visitLiteral(*this);
     }
 };
 
 class Unary : public Expr {
 public:
-    const Token m_op;
+    const Token                 m_op;
     const std::unique_ptr<Expr> m_right;
 
     Unary(Token op, std::unique_ptr<Expr> right)
         : m_op(std::move(op)), m_right(std::move(right)) {}
 
-    void accept(ExprVisitor& visitor) override {
-        visitor.visitUnary(*this);
+    Value accept(ExprVisitor& visitor) override {
+        return visitor.visitUnary(*this);
     }
 };
