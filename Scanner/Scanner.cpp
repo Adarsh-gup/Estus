@@ -52,7 +52,7 @@ void Scanner::string() {
         advance();
     }
     if (EndofSource()) {
-        error(m_line, "Unterminated string.");
+        PrintError::error(m_line, "Unterminated string.");
         return;
     }
     advance(); // closing "
@@ -125,7 +125,7 @@ void Scanner::scanToken() {
                  else if (peek() == '\n') { m_line++; advance();}
                  else {advance();}
                }
-               if (EndofSource()) { error(m_line, "Unterminated comment.");}
+               if (EndofSource()) { PrintError::error(m_line, "Unterminated comment.");}
             
             }
             else {
@@ -151,7 +151,7 @@ void Scanner::scanToken() {
                 identifier();
             }
             else {
-                error(m_line, "Unexpected character.");
+                PrintError::error(m_line, "Unexpected character.");
             }
             break;
     }

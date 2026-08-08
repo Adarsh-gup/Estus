@@ -6,8 +6,17 @@
 #include "Scanner/Scanner.hpp"
 
 bool hadError = false;
-void error(int line, std::string message) {
+namespace PrintError {
+ void error(int line, std::string message) {
     report(line, "", message);
+}
+void error(Token token, String message) {
+    if (token.m_type == TokenType::END_OF_FILE) {
+      report(token.m_line, " at end", message);
+    } else {
+      report(token.m_line, " at '" + token.m_lexeme + "'", message);
+    }
+  }
 }
 
 void report(int line, std::string where, std::string message) {

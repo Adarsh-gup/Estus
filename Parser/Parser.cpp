@@ -34,9 +34,18 @@ bool match(std::initializer_list<TokenType> types){
     }
     return false;
 }
+class ParseError : public std::runtime_error {
+public:
+    ParseError() : std::runtime_error("") {}
+};
+ParseError error(Token token, const std::string& message) {
+        PrintError::error(token, message);
+        return ParseError();
+    }
 Token consume(TokenType type, String message) {
     if (check(type)) return advance();
 
+    throw error(peek(), message);
   }
 
 

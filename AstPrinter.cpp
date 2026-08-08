@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include <variant>
-#include "Expressions/expr.cpp"
+#include "Expressions/expr.hpp"
 
 // ─────────────────────────────────────────────
 //  AstPrinter — produces a string from nodes
