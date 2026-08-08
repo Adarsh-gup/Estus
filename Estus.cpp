@@ -2,15 +2,17 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "error.hpp"
+#include "Parser/Parser.hpp"
+#include "AstPrinter.hpp"
 #include "Scanner/Scanner.hpp"
+#include "error.hpp"
 
 bool hadError = false;
 namespace PrintError {
- void error(int line, std::string message) {
+ void error(int line, const std::string& message) {
     report(line, "", message);
 }
-void error(Token token, String message) {
+void error(const Token& token, const std::string& message) {
     if (token.m_type == TokenType::END_OF_FILE) {
       report(token.m_line, " at end", message);
     } else {
@@ -19,17 +21,20 @@ void error(Token token, String message) {
   }
 }
 
-void report(int line, std::string where, std::string message) {
+void report(int line, const std::string& where, const std::string& message) {
     std::cout << "[line " << line << "] Error" << where + ": " << message << "\n";
     hadError = true;
 }
 
 void run(const std::string& source) {
     Scanner scan {source};
-    std::vector<Token> token { scan.scanTokens()};
-    for (const auto& t : token) {
-        std::cout << t << "\n";
-    }
+    std::vector<Token> tokens { scan.scanTokens() };
+    Parser parser(tokens);
+    std::unique_ptr<Expr> expression = parser.parse();
+
+    if (hadError) return;
+
+    std::cout << AstPrinter().print(*expression) << std::endl;
 }
 void runFile ( const char* path) {
     std::ifstream file(path);

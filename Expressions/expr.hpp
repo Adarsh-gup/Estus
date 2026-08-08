@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <memory>
 #include <string>
@@ -61,9 +62,9 @@ public:
 
 class Literal : public Expr {
 public:
-    const std::variant<std::monostate, double, std::string> m_value;
+    const std::variant<std::monostate, double, bool, std::string> m_value;
 
-    explicit Literal(std::variant<std::monostate, double, std::string> value)
+    explicit Literal(std::variant<std::monostate, double, bool, std::string> value)
         : m_value(std::move(value)) {}
 
     Value accept(ExprVisitor& visitor) override {

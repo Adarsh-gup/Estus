@@ -1,125 +1,151 @@
-#include <vector>
-#include "../Expressions/expr.hpp"
-#include "../Token/Token.hpp"
+#include "Parser.hpp"
 
-class Parser{
-private: 
-std::vector<Token> m_tokens{};
-int m_current {0};
+// helpers
 
-Token peek() {
+bool Parser::isAtEnd() {
+    return peek().m_type == TokenType::END_OF_FILE;
+}
+
+Token Parser::peek() {
     return m_tokens[m_current];
 }
-boolean isAtEnd() {
-    return peek().m_type == TokenType::END_OF_FILE;
-  }
-bool check(TokenType type){
-    if(!isAtEnd()) return false;
-    return peek().m_type == type;
 
+Token Parser::previous() {
+    return m_tokens[m_current - 1];
 }
-Token previous(){
-    return m.tokens[m_current-1];
-}
-Token advance() {
-    if (!isAtEnd()) current++;
+
+Token Parser::advance() {
+    if (!isAtEnd()) m_current++;
     return previous();
-  }
-bool match(std::initializer_list<TokenType> types){
-    for (const auto& type: types){
-        if(check(type)){
+}
+
+bool Parser::check(TokenType type) {
+    if (isAtEnd()) return false;
+    return peek().m_type == type;
+}
+
+bool Parser::match(std::initializer_list<TokenType> types) {
+    for (const auto& type : types) {
+        if (check(type)) {
             advance();
             return true;
         }
     }
     return false;
 }
-class ParseError : public std::runtime_error {
-public:
-    ParseError() : std::runtime_error("") {}
-};
-ParseError error(Token token, const std::string& message) {
-        PrintError::error(token, message);
-        return ParseError();
-    }
-Token consume(TokenType type, String message) {
+
+Token Parser::consume(TokenType type, const std::string& message) {
     if (check(type)) return advance();
-
     throw error(peek(), message);
-  }
+}
 
+Parser::ParseError Parser::error(Token token, const std::string& message) {
+    PrintError::error(token, message);
+    return ParseError();
+}
 
-Expr expresion() {
-return equality();
+void Parser::synchronize() {
+    advance();
+    while (!isAtEnd()) {
+        if (previous().m_type == TokenType::SEMICOLON) return;
+
+        switch (peek().m_type) {
+            case TokenType::CLASS: case TokenType::FUN: case TokenType::VAR: case TokenType::FOR:
+            case TokenType::IF:    case TokenType::WHILE: case TokenType::PRINT: case TokenType::RETURN:
+                return;
+            default:
+                break;
+        }
+        advance();
+    }
 }
-Expr equality() {
-Expr expr = comparison();
-while (match(Tokentype::BANG_EQUAL, Tokentype::EQUAL_EQUAL)){
-      Token operetor = previous();
-      Expr right = comparison();
-      expr = new Expr.Binary(expr, operator, right);
-    
+
+//Grammar rules (recursive descent) 
+std::unique_ptr<Expr> Parser::expression() {
+    return equality();
 }
-return expr;
+
+std::unique_ptr<Expr> Parser::equality() {
+    std::unique_ptr<Expr> expr = comparison();
+    while (match({TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL})) {
+        Token op = previous();
+        std::unique_ptr<Expr> right = comparison();
+        expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
+    }
+    return expr;
 }
-Expr comparison(){
-    Expr expr = term();
-    while (match(Tokentype::GREATER, Tokentype::GREATER_EQUAL,
-         Tokentype::LESS, Tokentype::LESS_EQUAL))
+
+std::unique_ptr<Expr> Parser::comparison() {
+    std::unique_ptr<Expr> expr = term();
+    while (match({TokenType::GREATER, TokenType::GREATER_EQUAL,
+                  TokenType::LESS,    TokenType::LESS_EQUAL}))
     {
-        Token operator = previous();
-        Expr right = term();
-        expr = new Expr.Binary(expr, operator, right);
+        Token op = previous();
+        std::unique_ptr<Expr> right = term();
+        expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
     }
     return expr;
 }
-Expr term() {
-    Expr expr = factor();
 
-    while (match(Tokentype::MINUS, Tokentype::PLUS)) {
-      Token operator = previous();
-      Expr right = factor();
-      expr = new Expr.Binary(expr, operator, right);
+std::unique_ptr<Expr> Parser::term() {
+    std::unique_ptr<Expr> expr = factor();
+    while (match({TokenType::MINUS, TokenType::PLUS})) {
+        Token op = previous();
+        std::unique_ptr<Expr> right = factor();
+        expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
     }
-
     return expr;
-  }
-Expr factor() {
-    Expr expr = unary();
+}
 
-    while (match(Tokentype::SLASH, Tokentype::STAR)) {
-      Token operator = previous();
-      Expr right = unary();
-      expr = new Expr.Binary(expr, operator, right);
+std::unique_ptr<Expr> Parser::factor() {
+    std::unique_ptr<Expr> expr = unary();
+    while (match({TokenType::SLASH, TokenType::STAR})) {
+        Token op = previous();
+        std::unique_ptr<Expr> right = unary();
+        expr = std::make_unique<Binary>(std::move(expr), op, std::move(right));
     }
-
     return expr;
-  }
-Expr unary(){
-    if (match(Tokentype::BANG, Tokentype::MINUS)){
-        Token operator = previous();
-        Expr right = unary();
-        return new Expr.Unary(operator , right );
+}
+
+std::unique_ptr<Expr> Parser::unary() {
+    if (match({TokenType::BANG, TokenType::MINUS})) {
+        Token op = previous();
+        std::unique_ptr<Expr> right = unary();
+        return std::make_unique<Unary>(op, std::move(right));
     }
     return primary();
 }
-Expr primary() {
-    if (match(Tokentype::FALSE)) return new Expr.Literal(false);
-    if (match(Tokentype::TRUE)) return new Expr.Literal(true);
-    if (match(Tokentype::NIL)) return new Expr.Literal(null);
 
-    if (match(Tokentype::NUMBER, Tokentype::STRING)) {
-      return new Expr.Literal(previous().literal);
+std::unique_ptr<Expr> Parser::primary() {
+    if (match({TokenType::FALSE})) return std::make_unique<Literal>(false);
+    if (match({TokenType::TRUE}))  return std::make_unique<Literal>(true);
+    if (match({TokenType::NIL}))   return std::make_unique<Literal>(std::monostate{});
+
+    if (match({TokenType::NUMBER, TokenType::STRING})) {
+        // Token::m_literal is variant<monostate, double, string>.
+        // Literal expects variant<monostate, double, bool, string>.
+        // std::visit widens the narrower variant into the broader one.
+        auto lit = std::visit([](auto&& v) -> std::variant<std::monostate, double, bool, std::string> {
+            return v;
+        }, previous().m_literal);
+        return std::make_unique<Literal>(std::move(lit));
     }
 
-    if (match(Tokentype::LEFT_PAREN)) {
-      Expr expr = expression();
-      consume(Tokentype::RIGHT_PAREN, "Expect ')' after expression.");
-      return new Expr.Grouping(expr);
+    if (match({TokenType::LEFT_PAREN})) {
+        std::unique_ptr<Expr> expr = expression();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
+        return std::make_unique<Grouping>(std::move(expr));
     }
-  }
 
-public:
-Parser(std::vector<Token> tokens) : m_tokens{tokens} {}
+    throw error(peek(), "Expect expression.");
+}
 
-};
+// Public entry point 
+
+std::unique_ptr<Expr> Parser::parse() {
+    try {
+        return expression();
+    } catch (const ParseError&) {
+        return nullptr;
+    }
+}
