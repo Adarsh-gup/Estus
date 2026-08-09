@@ -122,13 +122,7 @@ std::unique_ptr<Expr> Parser::primary() {
     if (match({TokenType::NIL}))   return std::make_unique<Literal>(std::monostate{});
 
     if (match({TokenType::NUMBER, TokenType::STRING})) {
-        // Token::m_literal is variant<monostate, double, string>.
-        // Literal expects variant<monostate, double, bool, string>.
-        // std::visit widens the narrower variant into the broader one.
-        auto lit = std::visit([](auto&& v) -> std::variant<std::monostate, double, bool, std::string> {
-            return v;
-        }, previous().m_literal);
-        return std::make_unique<Literal>(std::move(lit));
+        return std::make_unique<Literal>(previous().m_literal);
     }
 
     if (match({TokenType::LEFT_PAREN})) {

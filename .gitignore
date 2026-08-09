@@ -3,3 +3,10 @@
 /Estus.exe
 AstPrinter.exe
 AstPrinter_test.exe
+estus_test.exe
+
+#Objects
+AstPrinter.o
+Estus.o
+Parser.o
+Token.o

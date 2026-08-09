@@ -61,6 +61,9 @@ std::ostream& operator<<(std::ostream& out, const Token& token) {
   if (std::holds_alternative<double>(token.m_literal)) {
     out << std::get<double>(token.m_literal);
   }
+  else if (std::holds_alternative<bool>(token.m_literal)) {
+    out << (std::get<bool>(token.m_literal) ? "true" : "false");
+  }
   else if (std::holds_alternative<std::string>(token.m_literal)) {
     out << std::get<std::string>(token.m_literal);
   }

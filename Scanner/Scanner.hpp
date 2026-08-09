@@ -38,7 +38,7 @@ private:
     bool EndofSource();
     char advance();
     void addToken(TokenType type);
-    void addToken(TokenType type, std::variant<std::monostate, double, std::string> literal);
+    void addToken(TokenType type, std::variant<std::monostate, double, bool, std::string> literal);
     bool match(char expected);
     char peek();
     char peekNext();

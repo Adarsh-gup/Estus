@@ -62,9 +62,9 @@ public:
 
 class Literal : public Expr {
 public:
-    const std::variant<std::monostate, double, bool, std::string> m_value;
+    const Value m_value;
 
-    explicit Literal(std::variant<std::monostate, double, bool, std::string> value)
+    explicit Literal(Value value)
         : m_value(std::move(value)) {}
 
     Value accept(ExprVisitor& visitor) override {
