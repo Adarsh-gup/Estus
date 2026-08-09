@@ -10,3 +10,4 @@ AstPrinter.o
 Estus.o
 Parser.o
 Token.o
+interpreter.o

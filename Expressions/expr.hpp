@@ -25,12 +25,24 @@ public:
     virtual Value visitUnary(Unary& unary)          = 0;
 };
 
+// new interface for Interpreter
+
+class ExprEvaluator {  
+public:
+    virtual ~ExprEvaluator() = default;
+    virtual Value visitBinary(Binary& binary) = 0;
+    virtual Value visitGrouping(Grouping& grouping) = 0;
+    virtual Value visitUnary(Unary& unary) = 0;
+    virtual Value visitLiteral(Literal& literal) = 0;
+};
+
 //  Abstract base Expr
 
 class Expr {
 public:
     virtual ~Expr() = default;
     virtual Value accept(ExprVisitor& visitor) = 0;
+    virtual Value accept(ExprEvaluator& visitor) = 0;
 };
 
 
@@ -46,6 +58,10 @@ public:
     Value accept(ExprVisitor& visitor) override {
         return visitor.visitBinary(*this);
     }
+
+    Value accept(ExprEvaluator& visitor) override {
+        return visitor.visitBinary(*this);
+    }
 };
 
 class Grouping : public Expr {
@@ -56,6 +72,9 @@ public:
         : m_expr(std::move(expr)) {}
 
     Value accept(ExprVisitor& visitor) override {
+        return visitor.visitGrouping(*this);
+    }
+    Value accept(ExprEvaluator& visitor) override {
         return visitor.visitGrouping(*this);
     }
 };
@@ -70,6 +89,9 @@ public:
     Value accept(ExprVisitor& visitor) override {
         return visitor.visitLiteral(*this);
     }
+    Value accept(ExprEvaluator& visitor) override {
+        return visitor.visitLiteral(*this);
+    }
 };
 
 class Unary : public Expr {
@@ -81,6 +103,9 @@ public:
         : m_op(std::move(op)), m_right(std::move(right)) {}
 
     Value accept(ExprVisitor& visitor) override {
+        return visitor.visitUnary(*this);
+    }
+    Value accept(ExprEvaluator& visitor) override {
         return visitor.visitUnary(*this);
     }
 };
