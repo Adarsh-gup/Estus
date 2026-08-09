@@ -6,7 +6,7 @@
 
 class Interpreter : public ExprEvaluator {
 private:
-    // ── helpers ────────────────────────────────────────────────────────────
+    // helpers 
 
     Value evaluate(Expr& expr) {
         return expr.accept(*this);
@@ -42,7 +42,7 @@ private:
     }
 
 public:
-    // ── public entry point ──────────────────────────────────────────────────
+    // public entry point
 
     void interpret(Expr& expression) {
         try {
@@ -54,7 +54,7 @@ public:
         }
     }
 
-    // ── visitor implementations ─────────────────────────────────────────────
+    // visitor implementations
 
     Value visitLiteral(Literal& literal) override {
         return literal.m_value;
