@@ -6,7 +6,7 @@
 #include "Scanner/Scanner.hpp"
 #include "error.hpp"
 #include "RuntimeError/RuntimeError.hpp"
-#include "Interpreter/interpreter.cpp"
+#include "Interpreter/interpreter.hpp"
 
 bool hadError = false;
 bool hadRuntimeError = false;
