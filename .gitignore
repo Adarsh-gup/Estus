@@ -11,3 +11,4 @@ Estus.o
 Parser.o
 Token.o
 interpreter.o
+Scanner.o
