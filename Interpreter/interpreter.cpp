@@ -7,7 +7,9 @@
 Value Interpreter::evaluate(Expr& expr) {
     return expr.accept(*this);
 }
-
+void Interpreter::execute(Stmt& stmt) {
+    stmt.accept(*this);
+}
 void Interpreter::checkNumberOperand(const Token& op, const Value& operand) {
     if (std::holds_alternative<double>(operand)) return;
     throw RuntimeError(op, "Operand must be a number.");
@@ -39,10 +41,11 @@ std::string Interpreter::stringify(const Value& value) {
 
 // public entry point
 
-void Interpreter::interpret(Expr& expression) {
+void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>>& statements) {
     try {
-        Value value = evaluate(expression);
-        std::cout << stringify(value) << "\n";
+        for (const auto& statement : statements) {
+            execute(*statement);
+        }
     } catch (const RuntimeError& error) {
         // Propagate to the top-level handler in Estus.cpp
         throw;
@@ -51,6 +54,14 @@ void Interpreter::interpret(Expr& expression) {
 
 // visitor implementations
 
+void Interpreter::visitPrintStmt(PrintStmt& stmt) {
+    Value value = evaluate(*stmt.m_expression);
+    std::cout << stringify(value) << std::endl;
+}
+
+void Interpreter::visitExpressionStmt(ExpressionStmt& stmt) {
+    evaluate(*stmt.m_expression);
+}
 Value Interpreter::visitLiteral(Literal& literal) {
     return literal.m_value;
 }

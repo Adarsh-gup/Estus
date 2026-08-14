@@ -1,24 +1,30 @@
 #pragma once
 
 #include "../Expressions/expr.hpp"
+#include "../Statement/Statement.hpp"
 #include "../RuntimeError/RuntimeError.hpp"
 #include <string>
+#include <vector>
 
-class Interpreter : public ExprEvaluator {
+class Interpreter : public ExprEvaluator, public StmtVisitor {
 private:
     // helpers 
     Value evaluate(Expr& expr);
+    void execute(Stmt& stmt);
     void checkNumberOperand(const Token& op, const Value& operand);
     void checkNumberOperands(const Token& op, const Value& left, const Value& right);
     std::string stringify(const Value& value);
 
 public:
     // public entry point
-    void interpret(Expr& expression);
+    void interpret(std::vector<std::unique_ptr<Stmt>>& statements);
 
     // visitor implementations
     Value visitLiteral(Literal& literal) override;
     Value visitGrouping(Grouping& grouping) override;
     Value visitUnary(Unary& unary) override;
     Value visitBinary(Binary& binary) override;
+
+    void visitExpressionStmt(ExpressionStmt& stmt) override;
+    void visitPrintStmt(PrintStmt& stmt) override;
 };

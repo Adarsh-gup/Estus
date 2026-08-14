@@ -12,3 +12,4 @@ Parser.o
 Token.o
 interpreter.o
 Scanner.o
+test_print.estus

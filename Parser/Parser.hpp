@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <memory>
 #include "../Expressions/expr.hpp"
+#include "../Statement/Statement.hpp"
 #include "../Token/Token.hpp"
 #include "../error.hpp"
 
@@ -30,6 +31,9 @@ private:
 
     //Grammar rules (recursive descent)
     std::unique_ptr<Expr> expression();
+    std::unique_ptr<Stmt> statement();
+    std::unique_ptr<Stmt> printStatement();
+    std::unique_ptr<Stmt> expressionStatement();
     std::unique_ptr<Expr> equality();
     std::unique_ptr<Expr> comparison();
     std::unique_ptr<Expr> term();
@@ -40,5 +44,5 @@ private:
 public:
     explicit Parser(std::vector<Token> tokens) : m_tokens{std::move(tokens)} {}
 
-    std::unique_ptr<Expr> parse();
+    std::vector<std::unique_ptr<Stmt>> parse();
 };

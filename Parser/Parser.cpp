@@ -65,6 +65,22 @@ std::unique_ptr<Expr> Parser::expression() {
     return equality();
 }
 
+std::unique_ptr<Stmt> Parser::statement() {
+    if (match({TokenType::PRINT})) return printStatement();
+    return expressionStatement();
+}
+
+std::unique_ptr<Stmt> Parser::printStatement() {
+    std::unique_ptr<Expr> value = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after value.");
+    return std::make_unique<PrintStmt>(std::move(value));
+}
+
+std::unique_ptr<Stmt> Parser::expressionStatement() {
+    std::unique_ptr<Expr> expr = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+    return std::make_unique<ExpressionStmt>(std::move(expr));
+}
 std::unique_ptr<Expr> Parser::equality() {
     std::unique_ptr<Expr> expr = comparison();
     while (match({TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL})) {
@@ -136,10 +152,14 @@ std::unique_ptr<Expr> Parser::primary() {
 
 // Public entry point 
 
-std::unique_ptr<Expr> Parser::parse() {
+std::vector<std::unique_ptr<Stmt>> Parser::parse() {
+    std::vector<std::unique_ptr<Stmt>> statements;
     try {
-        return expression();
+        while (!isAtEnd()) {
+            statements.push_back(statement());
+        }
+        return statements;
     } catch (const ParseError&) {
-        return nullptr;
+        return {};
     }
 }

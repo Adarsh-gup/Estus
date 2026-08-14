@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "Parser/Parser.hpp"
+#include "Statement/Statement.hpp"
 #include "Scanner/Scanner.hpp"
 #include "error.hpp"
 #include "RuntimeError/RuntimeError.hpp"
@@ -37,12 +38,12 @@ void run(const std::string& source) {
     Scanner scan {source};
     std::vector<Token> tokens { scan.scanTokens() };
     Parser parser(tokens);
-    std::unique_ptr<Expr> expression = parser.parse();
+    std::vector<std::unique_ptr<Stmt>> stmt = parser.parse();
     if (hadError) return;
 
     static Interpreter interpreter;   // value, not pointer
     try {
-        interpreter.interpret(*expression);   // dereference unique_ptr
+        interpreter.interpret(stmt);   
     } catch (const RuntimeError& error) {
         runtimeError(error);
     }
