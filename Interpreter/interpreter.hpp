@@ -2,6 +2,7 @@
 
 #include "../Expressions/expr.hpp"
 #include "../Statement/Statement.hpp"
+#include "../Environment/Environment.hpp"
 #include "../RuntimeError/RuntimeError.hpp"
 #include <string>
 #include <vector>
@@ -14,6 +15,7 @@ private:
     void checkNumberOperand(const Token& op, const Value& operand);
     void checkNumberOperands(const Token& op, const Value& left, const Value& right);
     std::string stringify(const Value& value);
+    Environment m_environment{};
 
 public:
     // public entry point
@@ -24,7 +26,9 @@ public:
     Value visitGrouping(Grouping& grouping) override;
     Value visitUnary(Unary& unary) override;
     Value visitBinary(Binary& binary) override;
+    Value visitVariable(Variable& variable) override;
 
     void visitExpressionStmt(ExpressionStmt& stmt) override;
     void visitPrintStmt(PrintStmt& stmt) override;
+    void visitLetStmt(Let& stmt) override;
 };

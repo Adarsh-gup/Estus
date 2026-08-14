@@ -59,9 +59,18 @@ void Interpreter::visitPrintStmt(PrintStmt& stmt) {
     std::cout << stringify(value) << std::endl;
 }
 
+void Interpreter::visitLetStmt(Let& stmt) {
+    Value value = std::monostate{};
+    if (stmt.m_initializer != nullptr) {
+        value = evaluate(*stmt.m_initializer);
+    }
+    m_environment.define(stmt.m_name.m_lexeme, value);
+}
+
 void Interpreter::visitExpressionStmt(ExpressionStmt& stmt) {
     evaluate(*stmt.m_expression);
 }
+
 Value Interpreter::visitLiteral(Literal& literal) {
     return literal.m_value;
 }
@@ -90,6 +99,9 @@ Value Interpreter::visitUnary(Unary& unary) {
     }
 }
 
+Value Interpreter::visitVariable(Variable& variable) {
+    return m_environment.get(variable.m_name);
+}
 Value Interpreter::visitBinary(Binary& binary) {
     Value left  = evaluate(*binary.m_left);
     Value right = evaluate(*binary.m_right);

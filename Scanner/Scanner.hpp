@@ -28,7 +28,7 @@ private:
         {"super",  TokenType::SUPER},
         {"this",   TokenType::THIS},
         {"true",   TokenType::TRUE},
-        {"var",    TokenType::VAR},
+        {"let",    TokenType::LET},
         {"while",  TokenType::WHILE},
     };
     // Internal helpers — private

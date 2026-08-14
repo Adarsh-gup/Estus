@@ -30,6 +30,8 @@ private:
     void      synchronize();
 
     //Grammar rules (recursive descent)
+    std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> varDeclaration();
     std::unique_ptr<Expr> expression();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> printStatement();

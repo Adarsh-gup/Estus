@@ -13,3 +13,4 @@ Token.o
 interpreter.o
 Scanner.o
 test_print.estus
+test_variables.estus

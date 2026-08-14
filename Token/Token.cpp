@@ -48,7 +48,7 @@ std::string tokenToString(const TokenType& type) {
         case TokenType::SUPER:         return "SUPER";
         case TokenType::THIS:          return "THIS";
         case TokenType::TRUE:          return "TRUE";
-        case TokenType::VAR:           return "VAR";
+        case TokenType::LET:           return "LET";
         case TokenType::WHILE:         return "WHILE";
 
         case TokenType::END_OF_FILE:   return "EOF";

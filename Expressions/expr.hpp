@@ -10,7 +10,7 @@ class Binary;
 class Grouping;
 class Literal;
 class Unary;
-
+class Variable;
 
 using Value = std::variant<std::monostate, double, bool, std::string>;
 
@@ -23,6 +23,7 @@ public:
     virtual Value visitGrouping(Grouping& grouping) = 0;
     virtual Value visitLiteral(Literal& literal)    = 0;
     virtual Value visitUnary(Unary& unary)          = 0;
+    virtual Value visitVariable(Variable& variable) = 0;
 };
 
 // new interface for Interpreter
@@ -34,6 +35,7 @@ public:
     virtual Value visitGrouping(Grouping& grouping) = 0;
     virtual Value visitUnary(Unary& unary) = 0;
     virtual Value visitLiteral(Literal& literal) = 0;
+    virtual Value visitVariable(Variable& variable) = 0;
 };
 
 //  Abstract base Expr
@@ -107,5 +109,20 @@ public:
     }
     Value accept(ExprEvaluator& visitor) override {
         return visitor.visitUnary(*this);
+    }
+};
+
+class Variable : public Expr {
+public:
+    const Token m_name;
+
+    explicit Variable(Token name)
+        : m_name(std::move(name)) {}
+
+    Value accept(ExprVisitor& visitor) override {
+        return visitor.visitVariable(*this);
+    }
+    Value accept(ExprEvaluator& visitor) override {
+        return visitor.visitVariable(*this);
     }
 };

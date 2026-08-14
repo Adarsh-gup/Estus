@@ -50,7 +50,7 @@ void Parser::synchronize() {
         if (previous().m_type == TokenType::SEMICOLON) return;
 
         switch (peek().m_type) {
-            case TokenType::CLASS: case TokenType::FUN: case TokenType::VAR: case TokenType::FOR:
+            case TokenType::CLASS: case TokenType::FUN: case TokenType::LET: case TokenType::FOR:
             case TokenType::IF:    case TokenType::WHILE: case TokenType::PRINT: case TokenType::RETURN:
                 return;
             default:
@@ -70,10 +70,31 @@ std::unique_ptr<Stmt> Parser::statement() {
     return expressionStatement();
 }
 
+std::unique_ptr<Stmt> Parser::declaration() {
+    try {
+        if (match({TokenType::LET})) return varDeclaration();
+        return statement();
+    }
+    catch (const ParseError&) {
+        synchronize();
+        return nullptr;
+    }
+}
+
 std::unique_ptr<Stmt> Parser::printStatement() {
     std::unique_ptr<Expr> value = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after value.");
     return std::make_unique<PrintStmt>(std::move(value));
+}
+
+std::unique_ptr<Stmt> Parser::varDeclaration() {
+    Token name = consume(TokenType::IDENTIFIER, "Expect variable name.");
+    std::unique_ptr<Expr> initializer = nullptr;
+    if (match({TokenType::EQUAL})) {
+        initializer = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
+    return std::make_unique<Let>(std::move(name), std::move(initializer));
 }
 
 std::unique_ptr<Stmt> Parser::expressionStatement() {
@@ -140,7 +161,9 @@ std::unique_ptr<Expr> Parser::primary() {
     if (match({TokenType::NUMBER, TokenType::STRING})) {
         return std::make_unique<Literal>(previous().m_literal);
     }
-
+    if (match({TokenType::IDENTIFIER})) {
+        return std::make_unique<Variable>(previous());
+    }
     if (match({TokenType::LEFT_PAREN})) {
         std::unique_ptr<Expr> expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
@@ -156,7 +179,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
     std::vector<std::unique_ptr<Stmt>> statements;
     try {
         while (!isAtEnd()) {
-            statements.push_back(statement());
+            statements.push_back(declaration());
         }
         return statements;
     } catch (const ParseError&) {
